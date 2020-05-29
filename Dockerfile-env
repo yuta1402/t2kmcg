@@ -1,0 +1,22 @@
+FROM golang:1.14-alpine
+
+ENV CGO_ENABLED 0
+
+RUN apk add --no-cache \
+    udev \
+    ttf-freefont \
+    chromium \
+    chromium-chromedriver
+
+WORKDIR /go/src/github.com/yuta1402/t2kmpg
+
+COPY ./go.mod .
+COPY ./go.sum .
+
+RUN go mod download
+
+COPY . .
+
+# RUN go build -a -o app .
+
+CMD ["/bin/sh"]

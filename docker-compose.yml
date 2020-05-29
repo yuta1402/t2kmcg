@@ -1,0 +1,12 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile-env
+    image: t2kmpg
+    container_name: t2kmpg
+    tty: true
+    working_dir: /go/src/github.com/yuta1402/t2kmpg
+    volumes:
+      - ./:/go/src/github.com/yuta1402/t2kmpg
