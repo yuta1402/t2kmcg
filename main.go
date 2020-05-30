@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -15,8 +14,7 @@ const (
 )
 
 type AtCoderProblemsPage struct {
-	driver  *agouti.WebDriver
-	cookies []*http.Cookie
+	driver *agouti.WebDriver
 }
 
 func NewAtCoderProblemsPage() (*AtCoderProblemsPage, error) {
@@ -37,8 +35,7 @@ func NewAtCoderProblemsPage() (*AtCoderProblemsPage, error) {
 	}
 
 	p := &AtCoderProblemsPage{
-		driver:  driver,
-		cookies: nil,
+		driver: driver,
 	}
 
 	return p, nil
