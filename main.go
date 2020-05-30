@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -11,10 +12,12 @@ import (
 
 const (
 	AtCoderProblemsEndpoint = "https://kenkoooo.com/atcoder/#"
+	SleepInterval           = 100 * time.Millisecond
 )
 
 type AtCoderProblemsPage struct {
 	driver *agouti.WebDriver
+	page   *agouti.Page
 }
 
 func NewAtCoderProblemsPage() (*AtCoderProblemsPage, error) {
@@ -34,8 +37,14 @@ func NewAtCoderProblemsPage() (*AtCoderProblemsPage, error) {
 		return nil, err
 	}
 
+	page, err := driver.NewPage()
+	if err != nil {
+		return nil, err
+	}
+
 	p := &AtCoderProblemsPage{
 		driver: driver,
+		page:   page,
 	}
 
 	return p, nil
@@ -67,6 +76,57 @@ func (acpPage *AtCoderProblemsPage) NewPage(urlPath string) (*agouti.Page, error
 	return p, nil
 }
 
+func (acpPage *AtCoderProblemsPage) Login(id string, password string) error {
+	p := acpPage.page
+	if err := navigateWithPath(p, ""); err != nil {
+		return err
+	}
+
+	time.Sleep(SleepInterval)
+
+	{
+		e := p.FindByLink("Login")
+		if err := e.Click(); err != nil {
+			return err
+		}
+	}
+
+	time.Sleep(SleepInterval)
+
+	{
+		e := p.FindByID("login_field")
+		if err := e.Fill(id); err != nil {
+			return err
+		}
+	}
+
+	{
+		e := p.FindByID("password")
+		if err := e.Fill(password); err != nil {
+			return err
+		}
+	}
+
+	{
+		e := p.FindByName("commit")
+		if err := e.Submit(); err != nil {
+			return err
+		}
+
+		url, err := p.URL()
+		if err != nil {
+			return err
+		}
+
+		// githubのsessionページに戻されてしまった場合はログイン失敗
+		if url == "https://github.com/session" {
+			return errors.New("failed to login")
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	acpPage, err := NewAtCoderProblemsPage()
 	if err != nil {
@@ -74,55 +134,22 @@ func main() {
 	}
 	defer acpPage.Close()
 
-	p, err := acpPage.NewPage("")
+	id := os.Getenv("T2KMPG_ID")
+	password := os.Getenv("T2KMPG_PASSWORD")
 
-	time.Sleep(1 * time.Second)
-
-	{
-		e := p.FindByLink("Login")
-		if err := e.Click(); err != nil {
-			log.Fatal(err)
-		}
+	if err := acpPage.Login(id, password); err != nil {
+		log.Fatal(err)
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(SleepInterval)
 
-	{
-		id := os.Getenv("T2KMPG_ID")
-
-		e := p.FindByID("login_field")
-		if err := e.Fill(id); err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println(id)
-	}
-
-	{
-		password := os.Getenv("T2KMPG_PASSWORD")
-
-		e := p.FindByID("password")
-		if err := e.Fill(password); err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println(password)
-	}
-
-	{
-		e := p.FindByName("commit")
-		if err := e.Submit(); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	time.Sleep(1 * time.Second)
+	p := acpPage.page
 
 	if err := navigateWithPath(p, "/contest/create"); err != nil {
 		log.Fatal(err)
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(SleepInterval)
 
 	{
 		e := p.Find("#root > div > div.my-5.container > div:nth-child(2) > div > input")
@@ -139,7 +166,7 @@ func main() {
 		e.Click()
 	}
 
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(SleepInterval)
 
 	p.Screenshot("test.png")
 
