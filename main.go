@@ -63,19 +63,6 @@ func navigateWithPath(page *agouti.Page, urlPath string) error {
 	return nil
 }
 
-func (acpPage *AtCoderProblemsPage) NewPage(urlPath string) (*agouti.Page, error) {
-	p, err := acpPage.driver.NewPage()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := navigateWithPath(p, urlPath); err != nil {
-		return nil, err
-	}
-
-	return p, nil
-}
-
 func (acpPage *AtCoderProblemsPage) Login(id string, password string) error {
 	p := acpPage.page
 	if err := navigateWithPath(p, ""); err != nil {
