@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/sclevine/agouti"
@@ -18,6 +20,23 @@ const (
 type AtCoderProblemsPage struct {
 	driver *agouti.WebDriver
 	page   *agouti.Page
+}
+
+type ContestOptions struct {
+	ContestTitle string
+	Description  string
+	StartTime    time.Time
+	EndTime      time.Time
+}
+
+type ContestOptionElementValue struct {
+	Selector string
+	Value    string
+}
+
+type CreatedContest struct {
+	Options ContestOptions
+	URL     string
 }
 
 func NewAtCoderProblemsPage() (*AtCoderProblemsPage, error) {
@@ -100,6 +119,8 @@ func (acpPage *AtCoderProblemsPage) Login(id string, password string) error {
 			return err
 		}
 
+		time.Sleep(SleepInterval)
+
 		url, err := p.URL()
 		if err != nil {
 			return err
@@ -112,6 +133,83 @@ func (acpPage *AtCoderProblemsPage) Login(id string, password string) error {
 	}
 
 	return nil
+}
+
+func correctTime(t time.Time) time.Time {
+	t = t.Add(time.Duration(4-((4+t.Minute())%5)) * time.Minute)
+	return t
+}
+
+func makeDateStr(t time.Time) string {
+	y, m, d := t.Date()
+	return fmt.Sprintf("%02d/%02d/%04d/", m, d, y)
+}
+
+func makeDateHourMinute(t time.Time) (string, string, string) {
+	d := makeDateStr(t)
+	h := strconv.Itoa(t.Hour())
+	m := strconv.Itoa(t.Minute())
+	return d, h, m
+}
+
+func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*CreatedContest, error) {
+	p := acpPage.page
+	if err := navigateWithPath(p, "/contest/create"); err != nil {
+		return nil, err
+	}
+
+	time.Sleep(SleepInterval)
+
+	startDate, startHour, startMinute := makeDateHourMinute(options.StartTime)
+	endDate, endHour, endMinute := makeDateHourMinute(options.EndTime)
+
+	elementValues := []ContestOptionElementValue{
+		{"#root > div > div.my-5.container > div:nth-child(2) > div > input", options.ContestTitle},
+		{"#root > div > div.my-5.container > div:nth-child(3) > div > input", options.Description},
+		{"#root > div > div.my-5.container > div:nth-child(5) > div > div > input", startDate},
+		{"#root > div > div.my-5.container > div:nth-child(5) > div > div > select:nth-child(2)", startHour},
+		{"#root > div > div.my-5.container > div:nth-child(5) > div > div > select:nth-child(3)", startMinute},
+		{"#root > div > div.my-5.container > div:nth-child(6) > div > div > input", endDate},
+		{"#root > div > div.my-5.container > div:nth-child(6) > div > div > select:nth-child(2)", endHour},
+		{"#root > div > div.my-5.container > div:nth-child(6) > div > div > select:nth-child(3)", endMinute},
+	}
+
+	for _, ev := range elementValues {
+		e := p.Find(ev.Selector)
+		if err := e.Fill(ev.Value); err != nil {
+			return nil, err
+		}
+	}
+
+	{
+		e := p.FindByButton("Add")
+		if err := e.Click(); err != nil {
+			return nil, err
+		}
+	}
+
+	time.Sleep(5 * SleepInterval)
+
+	{
+		e := p.FindByButton("Create Contest")
+		if err := e.Click(); err != nil {
+			return nil, err
+		}
+	}
+
+	time.Sleep(10 * SleepInterval)
+
+	url, err := p.URL()
+	if err != nil {
+		return nil, err
+	}
+
+	// /contest/showに飛んでいなかったらコンテスト作成失敗
+	if !strings.Contains(url, AtCoderProblemsEndpoint+"/contest/show") {
+		return nil, errors.New("failed to create contest")
+	}
+
+	return nil, nil
 }
 
 func main() {
@@ -128,34 +226,31 @@ func main() {
 		log.Fatal(err)
 	}
 
-	time.Sleep(SleepInterval)
+	jst, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		log.Fatal(err)
+	}
+	now := time.Now().In(jst)
 
-	p := acpPage.page
+	startTime := correctTime(now)
+	endTime := correctTime(now)
 
-	if err := navigateWithPath(p, "/contest/create"); err != nil {
+	options := ContestOptions{
+		ContestTitle: "test contest",
+		Description:  "this is test contest.",
+		StartTime:    startTime,
+		EndTime:      endTime,
+	}
+
+	createdContest, err := acpPage.CreateContest(options)
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	time.Sleep(SleepInterval)
-
-	{
-		e := p.Find("#root > div > div.my-5.container > div:nth-child(2) > div > input")
-		e.Fill("test contest")
-	}
-
-	{
-		e := p.Find("#root > div > div.my-5.container > div:nth-child(3) > div > input")
-		e.Fill("this is test contest.")
-	}
-
-	{
-		e := p.FindByButton("Add")
-		e.Click()
-	}
-
-	time.Sleep(SleepInterval)
-
-	p.Screenshot("test.png")
-
-	fmt.Println(p.HTML())
+	fmt.Println("Created contest:")
+	fmt.Println("  ContestTitle: " + createdContest.Options.ContestTitle)
+	fmt.Println("  Description: " + createdContest.Options.Description)
+	fmt.Println("  StartTime: " + createdContest.Options.StartTime.Format("2006/01/02 15:04"))
+	fmt.Println("  EndTime: " + createdContest.Options.EndTime.Format("2006/01/02 15:04"))
+	fmt.Println("  URL: " + createdContest.URL)
 }
