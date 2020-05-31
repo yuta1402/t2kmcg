@@ -252,7 +252,7 @@ func main() {
 	var (
 		id           string
 		password     string
-		namePrefix   string
+		titlePrefix  string
 		description  string
 		startWeekday int
 		startTimeStr string
@@ -263,7 +263,7 @@ func main() {
 
 	flag.StringVar(&id, "id", "", "id of atcoder virtual contest")
 	flag.StringVar(&password, "password", "", "password of atcoder virtual contest")
-	flag.StringVar(&namePrefix, "name-prefix", "tmp contest", "prefix of contest name")
+	flag.StringVar(&titlePrefix, "title-prefix", "tmp contest", "prefix of contest title")
 	flag.StringVar(&description, "description", "", "contest description")
 	flag.IntVar(&startWeekday, "start-weekday", 0, "start weekday Sun=0, Mon=1, ... (default 0)")
 	flag.StringVar(&startTimeStr, "start-time", "21:00", "start time")
@@ -300,8 +300,8 @@ func main() {
 	endTime := startTime.Add(time.Duration(durationMin) * time.Minute)
 
 	options := ContestOptions{
-		ContestTitle: "test contest",
-		Description:  "this is test contest.",
+		ContestTitle: titlePrefix,
+		Description:  description,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
