@@ -239,6 +239,11 @@ func makeStartTime(startWeekday int, startTimeStr string) (time.Time, error) {
 	}
 
 	startTime := time.Date(now.Year(), now.Month(), startDay, startHour, startMin, 0, 0, jst)
+
+	if startTime.Unix() < now.Unix() {
+		return startTime.AddDate(0, 0, 7), nil
+	}
+
 	return correctTime(startTime), nil
 }
 
