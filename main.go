@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -248,7 +249,27 @@ func makeStartTime(startWeekday int, startTimeStr string) (time.Time, error) {
 }
 
 func main() {
-	isDry := true
+	var (
+		id           string
+		password     string
+		namePrefix   string
+		description  string
+		startWeekday int
+		startTimeStr string
+		durationMin  int
+		apiURL       string
+		isDry        bool
+	)
+
+	flag.StringVar(&id, "id", "", "id of atcoder virtual contest")
+	flag.StringVar(&password, "password", "", "password of atcoder virtual contest")
+	flag.StringVar(&namePrefix, "name-prefix", "tmp contest", "prefix of contest name")
+	flag.StringVar(&description, "description", "", "contest description")
+	flag.IntVar(&startWeekday, "start-weekday", 0, "start weekday Sun=0, Mon=1, ... (default 0)")
+	flag.StringVar(&startTimeStr, "start-time", "21:00", "start time")
+	flag.IntVar(&durationMin, "duration", 100, "duration [min]")
+	flag.StringVar(&apiURL, "api", "", "API of slack")
+	flag.BoolVar(&isDry, "dry-run", false, "enable dry run mode")
 
 	acpPage, err := NewAtCoderProblemsPage()
 	if err != nil {
@@ -256,8 +277,14 @@ func main() {
 	}
 	defer acpPage.Close()
 
-	id := os.Getenv("T2KMPG_ID")
-	password := os.Getenv("T2KMPG_PASSWORD")
+	flag.VisitAll(func(f *flag.Flag) {
+		n := "T2KMPG_" + strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))
+		if s := os.Getenv(n); s != "" {
+			f.Value.Set(s)
+		}
+	})
+
+	flag.Parse()
 
 	if !isDry {
 		if err := acpPage.Login(id, password); err != nil {
@@ -265,12 +292,12 @@ func main() {
 		}
 	}
 
-	startTime, err := makeStartTime(1, "18:00")
+	startTime, err := makeStartTime(startWeekday, startTimeStr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	endTime := startTime.Add(100 * time.Minute)
+	endTime := startTime.Add(time.Duration(durationMin) * time.Minute)
 
 	options := ContestOptions{
 		ContestTitle: "test contest",
