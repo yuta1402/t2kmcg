@@ -1,15 +1,22 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 )
+
+type RequestData struct {
+	Text string `json:"text"`
+}
 
 func correctTime(t time.Time) time.Time {
 	t = t.Add(time.Duration(4-((4+t.Minute())%5)) * time.Minute)
@@ -49,6 +56,32 @@ func makeStartTime(startWeekday int, startTimeStr string) (time.Time, error) {
 	}
 
 	return correctTime(startTime), nil
+}
+
+func postSlack(createdContest *CreatedContest, apiURL string) (*http.Response, error) {
+	startTimeStr := createdContest.Options.StartTime.Format("2006/01/02 15:04")
+	endTimeStr := createdContest.Options.EndTime.Format("2006/01/02 15:04")
+
+	text := "*「" + createdContest.Options.ContestTitle + "」開催のお知らせ*\n" +
+		"日時: " + startTimeStr + " ~ " + endTimeStr + "\n" +
+		"会場: " + createdContest.URL + "\n" +
+		"\n参加できる方は:ok: 絵文字、参加できない方は:ng: 絵文字でお知らせください。"
+
+	d := RequestData{
+		Text: text,
+	}
+
+	json, err := json.Marshal(d)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := http.Post(apiURL, "application/json", bytes.NewBuffer([]byte(json)))
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func main() {
@@ -127,4 +160,14 @@ func main() {
 	fmt.Println("  StartTime: " + createdContest.Options.StartTime.Format("2006/01/02 15:04"))
 	fmt.Println("  EndTime: " + createdContest.Options.EndTime.Format("2006/01/02 15:04"))
 	fmt.Println("  URL: " + createdContest.URL)
+
+	if !isDry {
+		res, err := postSlack(createdContest, apiURL)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			return
+		}
+
+		fmt.Println("Status :" + res.Status)
+	}
 }
