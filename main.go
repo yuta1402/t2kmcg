@@ -212,7 +212,39 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 	return nil, nil
 }
 
+func makeStartTime(startWeekday int, startTimeStr string) (time.Time, error) {
+	jst, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	now := time.Now().In(jst)
+
+	diffDay := (startWeekday - int(now.Weekday()) + 7) % 7
+	startDay := now.Day() + diffDay
+
+	a := strings.Split(startTimeStr, ":")
+	if len(a) != 2 {
+		return time.Time{}, errors.New("start time parse error")
+	}
+
+	startHour, err := strconv.Atoi(a[0])
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	startMin, err := strconv.Atoi(a[1])
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	startTime := time.Date(now.Year(), now.Month(), startDay, startHour, startMin, 0, 0, jst)
+	return correctTime(startTime), nil
+}
+
 func main() {
+	isDry := true
+
 	acpPage, err := NewAtCoderProblemsPage()
 	if err != nil {
 		log.Fatal(err)
@@ -222,18 +254,18 @@ func main() {
 	id := os.Getenv("T2KMPG_ID")
 	password := os.Getenv("T2KMPG_PASSWORD")
 
-	if err := acpPage.Login(id, password); err != nil {
-		log.Fatal(err)
+	if !isDry {
+		if err := acpPage.Login(id, password); err != nil {
+			log.Fatal(err)
+		}
 	}
 
-	jst, err := time.LoadLocation("Asia/Tokyo")
+	startTime, err := makeStartTime(1, "18:00")
 	if err != nil {
 		log.Fatal(err)
 	}
-	now := time.Now().In(jst)
 
-	startTime := correctTime(now)
-	endTime := correctTime(now)
+	endTime := startTime.Add(100 * time.Minute)
 
 	options := ContestOptions{
 		ContestTitle: "test contest",
@@ -242,9 +274,16 @@ func main() {
 		EndTime:      endTime,
 	}
 
-	createdContest, err := acpPage.CreateContest(options)
-	if err != nil {
-		log.Fatal(err)
+	createdContest := &CreatedContest{
+		Options: options,
+		URL:     "",
+	}
+
+	if !isDry {
+		createdContest, err = acpPage.CreateContest(options)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	fmt.Println("Created contest:")
