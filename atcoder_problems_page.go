@@ -199,15 +199,6 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 
 	time.Sleep(5 * SleepInterval)
 
-	p.Screenshot("test.png")
-
-	createdContest := &CreatedContest{
-		Options: options,
-		URL:     "",
-	}
-
-	return createdContest, nil
-
 	{
 		e := p.FindByButton("Create Contest")
 		if err := e.Click(); err != nil {
@@ -227,7 +218,7 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 		return nil, errors.New("failed to create contest")
 	}
 
-	createdContest = &CreatedContest{
+	createdContest := &CreatedContest{
 		Options: options,
 		URL:     url,
 	}
