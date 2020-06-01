@@ -10,6 +10,33 @@ import (
 	"github.com/sclevine/agouti"
 )
 
+const (
+	AtCoderProblemsEndpoint = "https://kenkoooo.com/atcoder/#"
+	SleepInterval           = 100 * time.Millisecond
+)
+
+type AtCoderProblemsPage struct {
+	driver *agouti.WebDriver
+	page   *agouti.Page
+}
+
+type ContestOptions struct {
+	ContestTitle string
+	Description  string
+	StartTime    time.Time
+	EndTime      time.Time
+}
+
+type ContestOptionElementValue struct {
+	Selector string
+	Value    string
+}
+
+type CreatedContest struct {
+	Options ContestOptions
+	URL     string
+}
+
 func NewAtCoderProblemsPage() (*AtCoderProblemsPage, error) {
 	options := agouti.ChromeOptions("args", []string{
 		"--headless",
@@ -42,33 +69,6 @@ func NewAtCoderProblemsPage() (*AtCoderProblemsPage, error) {
 
 func (acpPage *AtCoderProblemsPage) Close() {
 	acpPage.driver.Stop()
-}
-
-const (
-	AtCoderProblemsEndpoint = "https://kenkoooo.com/atcoder/#"
-	SleepInterval           = 100 * time.Millisecond
-)
-
-type AtCoderProblemsPage struct {
-	driver *agouti.WebDriver
-	page   *agouti.Page
-}
-
-type ContestOptions struct {
-	ContestTitle string
-	Description  string
-	StartTime    time.Time
-	EndTime      time.Time
-}
-
-type ContestOptionElementValue struct {
-	Selector string
-	Value    string
-}
-
-type CreatedContest struct {
-	Options ContestOptions
-	URL     string
 }
 
 func navigateWithPath(page *agouti.Page, urlPath string) error {
