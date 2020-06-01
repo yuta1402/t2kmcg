@@ -156,21 +156,37 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 	startDate, startHour, startMinute := makeDateHourMinute(options.StartTime)
 	endDate, endHour, endMinute := makeDateHourMinute(options.EndTime)
 
-	elementValues := []ContestOptionElementValue{
-		{"#root > div > div.my-5.container > div:nth-child(2) > div > input", options.ContestTitle},
-		{"#root > div > div.my-5.container > div:nth-child(3) > div > input", options.Description},
-		{"#root > div > div.my-5.container > div:nth-child(5) > div > div > input", startDate},
-		{"#root > div > div.my-5.container > div:nth-child(5) > div > div > select:nth-child(2)", startHour},
-		{"#root > div > div.my-5.container > div:nth-child(5) > div > div > select:nth-child(3)", startMinute},
-		{"#root > div > div.my-5.container > div:nth-child(6) > div > div > input", endDate},
-		{"#root > div > div.my-5.container > div:nth-child(6) > div > div > select:nth-child(2)", endHour},
-		{"#root > div > div.my-5.container > div:nth-child(6) > div > div > select:nth-child(3)", endMinute},
+	fmt.Println(endDate, endHour, endMinute)
+
+	{
+		elementValues := []ContestOptionElementValue{
+			{"#root > div > div.my-5.container > div:nth-child(2) > div > input", options.ContestTitle},
+			{"#root > div > div.my-5.container > div:nth-child(3) > div > input", options.Description},
+			{"#root > div > div.my-5.container > div:nth-child(5) > div > div > input", startDate},
+			{"#root > div > div.my-5.container > div:nth-child(6) > div > div > input", endDate},
+		}
+
+		for _, ev := range elementValues {
+			e := p.Find(ev.Selector)
+			if err := e.Fill(ev.Value); err != nil {
+				return nil, err
+			}
+		}
 	}
 
-	for _, ev := range elementValues {
-		e := p.Find(ev.Selector)
-		if err := e.Fill(ev.Value); err != nil {
-			return nil, err
+	{
+		elementValues := []ContestOptionElementValue{
+			{"#root > div > div.my-5.container > div:nth-child(5) > div > div > select:nth-child(2)", startHour},
+			{"#root > div > div.my-5.container > div:nth-child(5) > div > div > select:nth-child(3)", startMinute},
+			{"#root > div > div.my-5.container > div:nth-child(6) > div > div > select:nth-child(2)", endHour},
+			{"#root > div > div.my-5.container > div:nth-child(6) > div > div > select:nth-child(3)", endMinute},
+		}
+
+		for _, ev := range elementValues {
+			e := p.Find(ev.Selector)
+			if err := e.Select(ev.Value); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -182,6 +198,15 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 	}
 
 	time.Sleep(5 * SleepInterval)
+
+	p.Screenshot("test.png")
+
+	createdContest := &CreatedContest{
+		Options: options,
+		URL:     "",
+	}
+
+	return createdContest, nil
 
 	{
 		e := p.FindByButton("Create Contest")
@@ -202,5 +227,10 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 		return nil, errors.New("failed to create contest")
 	}
 
-	return nil, nil
+	createdContest = &CreatedContest{
+		Options: options,
+		URL:     url,
+	}
+
+	return createdContest, nil
 }

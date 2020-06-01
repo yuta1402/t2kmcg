@@ -142,6 +142,8 @@ func main() {
 		EndTime:      endTime,
 	}
 
+	fmt.Println(makeDateHourMinute(endTime))
+
 	createdContest := &CreatedContest{
 		Options: options,
 		URL:     "",
