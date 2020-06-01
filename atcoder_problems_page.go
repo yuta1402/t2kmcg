@@ -156,8 +156,6 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 	startDate, startHour, startMinute := makeDateHourMinute(options.StartTime)
 	endDate, endHour, endMinute := makeDateHourMinute(options.EndTime)
 
-	fmt.Println(endDate, endHour, endMinute)
-
 	{
 		elementValues := []ContestOptionElementValue{
 			{"#root > div > div.my-5.container > div:nth-child(2) > div > input", options.ContestTitle},
