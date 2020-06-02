@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -107,12 +106,6 @@ func main() {
 	flag.StringVar(&apiURL, "api", "", "API of slack")
 	flag.BoolVar(&isDry, "dry-run", false, "enable dry run mode")
 
-	acpPage, err := NewAtCoderProblemsPage()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer acpPage.Close()
-
 	flag.VisitAll(func(f *flag.Flag) {
 		n := "T2KMPG_" + strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))
 		if s := os.Getenv(n); s != "" {
@@ -122,15 +115,30 @@ func main() {
 
 	flag.Parse()
 
-	if !isDry {
-		if err := acpPage.Login(id, password); err != nil {
-			log.Fatal(err)
-		}
+	ilog := log.New(os.Stdout, "[info] ", log.LstdFlags|log.LUTC)
+	elog := log.New(os.Stderr, "[error] ", log.LstdFlags|log.LUTC)
+
+	acpPage, err := NewAtCoderProblemsPage()
+	if err != nil {
+		elog.Fatal(err)
 	}
+	defer acpPage.Close()
+
+	if !isDry {
+		ilog.Println("Trying to login to AtCoder Problems...")
+
+		if err := acpPage.Login(id, password); err != nil {
+			elog.Fatal(err)
+		}
+
+		ilog.Println("Login succeeded.")
+	}
+
+	ilog.Println("Creating contet...")
 
 	startTime, err := makeStartTime(startWeekday, startTimeStr)
 	if err != nil {
-		log.Fatal(err)
+		elog.Fatal(err)
 	}
 
 	endTime := startTime.Add(time.Duration(durationMin) * time.Minute)
@@ -154,20 +162,21 @@ func main() {
 		}
 	}
 
-	fmt.Println("Created contest:")
-	fmt.Println("  ContestTitle: " + createdContest.Options.ContestTitle)
-	fmt.Println("  Description: " + createdContest.Options.Description)
-	fmt.Println("  StartTime: " + createdContest.Options.StartTime.Format("2006/01/02 15:04"))
-	fmt.Println("  EndTime: " + createdContest.Options.EndTime.Format("2006/01/02 15:04"))
-	fmt.Println("  URL: " + createdContest.URL)
+	ilog.Println("Created contest:")
+	ilog.Println("  ContestTitle: " + createdContest.Options.ContestTitle)
+	ilog.Println("  Description: " + createdContest.Options.Description)
+	ilog.Println("  StartTime: " + createdContest.Options.StartTime.Format("2006/01/02 15:04"))
+	ilog.Println("  EndTime: " + createdContest.Options.EndTime.Format("2006/01/02 15:04"))
+	ilog.Println("  URL: " + createdContest.URL)
+
+	ilog.Println("Posting to slack...")
 
 	if !isDry {
 		res, err := postSlack(createdContest, apiURL)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error: %s\n", err)
-			return
+			elog.Fatal(err)
 		}
 
-		fmt.Println("Status :" + res.Status)
+		ilog.Println("Status :" + res.Status)
 	}
 }
