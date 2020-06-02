@@ -40,8 +40,7 @@ type CreatedContest struct {
 func NewAtCoderProblemsPage() (*AtCoderProblemsPage, error) {
 	options := agouti.ChromeOptions("args", []string{
 		"--headless",
-		// "--window-size=1200,800",
-		"--window-size=1200,2000",
+		"--window-size=1200,800",
 		"--blink-settings=imagesEnabled=false", // don't load images
 		"--disable-gpu",                        // ref: https://developers.google.com/web/updates/2017/04/headless-chrome#cli
 		"no-sandbox",                           // ref: https://github.com/theintern/intern/issues/878
