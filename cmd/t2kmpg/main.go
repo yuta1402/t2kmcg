@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/yuta1402/t2kmpg/pkg/webparse"
 )
 
 type RequestData struct {
@@ -57,7 +59,7 @@ func makeStartTime(startWeekday int, startTimeStr string) (time.Time, error) {
 	return correctTime(startTime), nil
 }
 
-func postSlack(createdContest *CreatedContest, apiURL string) (*http.Response, error) {
+func postSlack(createdContest *webparse.CreatedContest, apiURL string) (*http.Response, error) {
 	startTimeStr := createdContest.Options.StartTime.Format("2006/01/02 15:04")
 	endTimeStr := createdContest.Options.EndTime.Format("2006/01/02 15:04")
 
@@ -118,7 +120,7 @@ func main() {
 	ilog := log.New(os.Stdout, "[info] ", log.LstdFlags|log.LUTC)
 	elog := log.New(os.Stderr, "[error] ", log.LstdFlags|log.LUTC)
 
-	acpPage, err := NewAtCoderProblemsPage()
+	acpPage, err := webparse.NewAtCoderProblemsPage()
 	if err != nil {
 		elog.Fatal(err)
 	}
@@ -143,14 +145,14 @@ func main() {
 
 	endTime := startTime.Add(time.Duration(durationMin) * time.Minute)
 
-	options := ContestOptions{
+	options := webparse.ContestOptions{
 		ContestTitle: titlePrefix,
 		Description:  description,
 		StartTime:    startTime,
 		EndTime:      endTime,
 	}
 
-	createdContest := &CreatedContest{
+	createdContest := &webparse.CreatedContest{
 		Options: options,
 		URL:     "",
 	}

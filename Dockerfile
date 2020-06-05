@@ -11,7 +11,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -a -o t2kmpg .
+RUN go build -a -o ./ ./...
 
 
 FROM alpine:latest
