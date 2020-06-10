@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/yuta1402/t2kmpg/pkg/webparse"
+	"github.com/yuta1402/t2kmcg/pkg/webparse"
 )
 
 type requestData struct {

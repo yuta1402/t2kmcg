@@ -8,7 +8,7 @@ RUN apk add --no-cache \
     chromium \
     chromium-chromedriver
 
-WORKDIR /go/src/github.com/yuta1402/t2kmpg
+WORKDIR /go/src/github.com/yuta1402/t2kmcg
 
 COPY ./go.mod .
 COPY ./go.sum .

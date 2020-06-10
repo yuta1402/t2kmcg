@@ -4,9 +4,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-env
-    image: t2kmpg
-    container_name: t2kmpg
+    image: t2kmcg
+    container_name: t2kmcg
     tty: true
-    working_dir: /go/src/github.com/yuta1402/t2kmpg
+    working_dir: /go/src/github.com/yuta1402/t2kmcg
     volumes:
-      - ./:/go/src/github.com/yuta1402/t2kmpg
+      - ./:/go/src/github.com/yuta1402/t2kmcg

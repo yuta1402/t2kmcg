@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yuta1402/t2kmpg/pkg/slack"
-	"github.com/yuta1402/t2kmpg/pkg/webparse"
+	"github.com/yuta1402/t2kmcg/pkg/slack"
+	"github.com/yuta1402/t2kmcg/pkg/webparse"
 )
 
 func correctTime(t time.Time) time.Time {

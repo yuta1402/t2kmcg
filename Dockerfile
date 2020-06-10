@@ -2,7 +2,7 @@ FROM golang:1.14-alpine as builder
 
 ENV CGO_ENABLED 0
 
-WORKDIR /go/src/github.com/yuta1402/t2kmpg
+WORKDIR /go/src/github.com/yuta1402/t2kmcg
 
 COPY ./go.mod .
 COPY ./go.sum .
@@ -25,6 +25,6 @@ RUN apk add --no-cache \
     chromium \
     chromium-chromedriver
 
-COPY --from=builder /go/src/github.com/yuta1402/t2kmpg/t2kmpg .
+COPY --from=builder /go/src/github.com/yuta1402/t2kmcg/t2kmcg .
 
-CMD ["./t2kmpg"]
+CMD ["./t2kmcg"]

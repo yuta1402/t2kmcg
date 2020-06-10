@@ -1,4 +1,4 @@
-module github.com/yuta1402/t2kmpg
+module github.com/yuta1402/t2kmcg
 
 go 1.14
 
