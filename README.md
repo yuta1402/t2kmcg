@@ -1,2 +1,2 @@
-# t2kmpg
-t2kmpg is a generator of contest on t2km-comp.
+# t2kmcg
+t2kmcg is weekly contest generator.
