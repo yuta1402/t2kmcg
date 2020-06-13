@@ -3,9 +3,9 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile-env
-    image: t2kmcg-env
-    container_name: t2kmcg-env
+      dockerfile: Dockerfile-dev
+    image: t2kmcg-dev
+    container_name: t2kmcg-dev
     tty: true
     working_dir: /go/src/github.com/yuta1402/t2kmcg
     volumes:
