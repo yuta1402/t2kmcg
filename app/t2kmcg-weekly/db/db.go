@@ -20,7 +20,7 @@ type Config struct {
 
 func Init(c Config) error {
 	protocol := "tcp(" + c.Hostname + ":" + c.Port + ")"
-	source := c.Username + ":" + c.Password + "@" + protocol + "/" + c.Database
+	source := c.Username + ":" + c.Password + "@" + protocol + "/" + c.Database + "?parseTime=true"
 
 	newDB, err := gorm.Open("mysql", source)
 	if err != nil {

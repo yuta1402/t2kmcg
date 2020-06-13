@@ -9,8 +9,9 @@ import (
 type Contest struct {
 	gorm.Model
 
-	Title     string
-	URL       string
-	StartTime time.Time
-	EndTime   time.Time
+	Title       string
+	TitlePrefix string
+	URL         string
+	StartTime   time.Time
+	EndTime     time.Time
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/yuta1402/t2kmcg/app/t2kmcg-weekly/db"
+	"github.com/yuta1402/t2kmcg/app/t2kmcg-weekly/model"
 	"github.com/yuta1402/t2kmcg/pkg/slack"
 	"github.com/yuta1402/t2kmcg/pkg/webparse"
 )
@@ -52,6 +54,22 @@ func makeStartTime(startWeekday int, startTimeStr string) (time.Time, error) {
 	}
 
 	return correctTime(startTime), nil
+}
+
+func findContestMaxID(titlePrefix string) (uint, error) {
+	var contests []model.Contest
+	if err := db.GetDB().Where("title_prefix = ?", titlePrefix).Find(&contests).Error; err != nil {
+		return 0, err
+	}
+
+	maxID := uint(0)
+	for _, c := range contests {
+		if maxID < c.ID {
+			maxID = c.ID
+		}
+	}
+
+	return maxID, nil
 }
 
 func main() {
@@ -129,8 +147,13 @@ func main() {
 
 	endTime := startTime.Add(time.Duration(durationMin) * time.Minute)
 
+	maxID, err := findContestMaxID(titlePrefix)
+	if err != nil {
+		elog.Fatal(err)
+	}
+
 	options := webparse.ContestOptions{
-		ContestTitle: titlePrefix,
+		ContestTitle: fmt.Sprintf("%s %03d", titlePrefix, maxID+1),
 		Description:  description,
 		StartTime:    startTime,
 		EndTime:      endTime,
@@ -144,7 +167,19 @@ func main() {
 	if !isDry {
 		createdContest, err = acpPage.CreateContest(options)
 		if err != nil {
-			log.Fatal(err)
+			elog.Fatal(err)
+		}
+
+		c := model.Contest{
+			Title:       options.ContestTitle,
+			TitlePrefix: titlePrefix,
+			StartTime:   options.StartTime,
+			EndTime:     options.EndTime,
+		}
+
+		db := db.GetDB()
+		if err := db.Create(&c).Error; err != nil {
+			elog.Fatal(err)
 		}
 	}
 
