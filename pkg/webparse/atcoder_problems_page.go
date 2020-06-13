@@ -1,17 +1,20 @@
 package webparse
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/sclevine/agouti"
 )
 
 const (
 	AtCoderProblemsEndpoint = "https://kenkoooo.com/atcoder/#"
+	InternalAPIEndpoint     = "https://kenkoooo.com/atcoder/internal-api"
 	SleepInterval           = 100 * time.Millisecond
 )
 
@@ -36,6 +39,17 @@ type CreatedContest struct {
 	Options ContestOptions
 	URL     string
 }
+
+type MyContest struct {
+	ID               string `json:"id"`
+	Title            string `json:"title"`
+	Memo             string `json:"memo"`
+	OwnerUserID      string `json:"owner_user_id"`
+	StartEpochSecond int64  `json:"start_epoch_second"`
+	DurationSecond   int64  `json:"duration_second"`
+}
+
+type MyContestsResponse []MyContest
 
 func NewAtCoderProblemsPage() (*AtCoderProblemsPage, error) {
 	options := agouti.ChromeOptions("args", []string{
@@ -221,4 +235,49 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 	}
 
 	return createdContest, nil
+}
+
+func (acpPage *AtCoderProblemsPage) GetMyContests() ([]*CreatedContest, error) {
+	p := acpPage.page
+
+	err := p.Navigate(InternalAPIEndpoint + "/contest/my")
+	if err != nil {
+		return nil, err
+	}
+
+	time.Sleep(SleepInterval)
+
+	html, err := p.HTML()
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	if err != nil {
+		return nil, err
+	}
+
+	jsonStr := doc.Find("body > pre").Text()
+	var myContests MyContestsResponse
+	if err := json.Unmarshal([]byte(jsonStr), &myContests); err != nil {
+		return nil, err
+	}
+
+	createdContests := []*CreatedContest{}
+
+	for _, c := range myContests {
+		options := ContestOptions{
+			ContestTitle: c.Title,
+			Description:  c.Memo,
+			StartTime:    time.Unix(c.StartEpochSecond, 0),
+			EndTime:      time.Unix(c.StartEpochSecond+c.DurationSecond, 0),
+		}
+
+		createdContests = append(createdContests, &CreatedContest{
+			Options: options,
+			URL:     AtCoderProblemsEndpoint + "/contest/show/" + c.ID,
+		})
+	}
+
+	return createdContests, nil
 }

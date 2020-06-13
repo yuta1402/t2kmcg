@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -53,6 +54,37 @@ func makeStartTime(startWeekday int, startTimeStr string) (time.Time, error) {
 	return correctTime(startTime), nil
 }
 
+func findMaxContestID(acpPage *webparse.AtCoderProblemsPage, titlePrefix string) (int, error) {
+	createdContests, err := acpPage.GetMyContests()
+	if err != nil {
+		return 0, err
+	}
+
+	maxID := 0
+	for _, c := range createdContests {
+		title := c.Options.ContestTitle
+		if strings.Contains(title, titlePrefix) {
+			idStr := strings.ReplaceAll(title, titlePrefix, "")
+			idStr = strings.TrimSpace(idStr)
+
+			if idStr == "" {
+				continue
+			}
+
+			id, err := strconv.Atoi(idStr)
+			if err != nil {
+				return 0, err
+			}
+
+			if id > maxID {
+				maxID = id
+			}
+		}
+	}
+
+	return maxID, nil
+}
+
 func main() {
 	var (
 		id           string
@@ -94,17 +126,20 @@ func main() {
 	}
 	defer acpPage.Close()
 
-	if !isDry {
-		ilog.Println("Trying to login to AtCoder Problems...")
+	ilog.Println("Trying to login to AtCoder Problems...")
 
-		if err := acpPage.Login(id, password); err != nil {
-			elog.Fatal(err)
-		}
-
-		ilog.Println("Login succeeded.")
+	if err := acpPage.Login(id, password); err != nil {
+		elog.Fatal(err)
 	}
 
+	ilog.Println("Login succeeded.")
+
 	ilog.Println("Creating contet...")
+
+	maxContestID, err := findMaxContestID(acpPage, titlePrefix)
+	if err != nil {
+		elog.Fatal(err)
+	}
 
 	startTime, err := makeStartTime(startWeekday, startTimeStr)
 	if err != nil {
@@ -114,7 +149,7 @@ func main() {
 	endTime := startTime.Add(time.Duration(durationMin) * time.Minute)
 
 	options := webparse.ContestOptions{
-		ContestTitle: titlePrefix,
+		ContestTitle: fmt.Sprintf("%s %03d", titlePrefix, maxContestID+1),
 		Description:  description,
 		StartTime:    startTime,
 		EndTime:      endTime,
