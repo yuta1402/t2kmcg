@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yuta1402/t2kmcg/app/t2kmcg-weekly/db"
 	"github.com/yuta1402/t2kmcg/pkg/slack"
 	"github.com/yuta1402/t2kmcg/pkg/webparse"
 )
@@ -87,6 +88,19 @@ func main() {
 
 	ilog := log.New(os.Stdout, "[info] ", log.LstdFlags|log.LUTC)
 	elog := log.New(os.Stderr, "[error] ", log.LstdFlags|log.LUTC)
+
+	config := db.Config{
+		Username: os.Getenv("MYSQL_ROOT_USER"),
+		Password: os.Getenv("MYSQL_ROOT_PASSWORD"),
+		Hostname: os.Getenv("MYSQL_HOSTNAME"),
+		Port:     os.Getenv("MYSQL_PORT"),
+		Database: os.Getenv("MYSQL_DATABASE"),
+	}
+
+	if err := db.Init(config); err != nil {
+		elog.Fatal(err)
+	}
+	defer db.Close()
 
 	acpPage, err := webparse.NewAtCoderProblemsPage()
 	if err != nil {

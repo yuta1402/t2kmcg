@@ -8,5 +8,24 @@ services:
     container_name: t2kmcg-env
     tty: true
     working_dir: /go/src/github.com/yuta1402/t2kmcg
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_HOSTNAME: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: t2kmcg
     volumes:
       - ./:/go/src/github.com/yuta1402/t2kmcg
+
+  mysql:
+    image: mysql:8.0
+    container_name: t2kmcg-mysql
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: t2kmcg
+    volumes:
+      - mysql-volume:/var/lib/mysql
+
+volumes:
+  mysql-volume:
