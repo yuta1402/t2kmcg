@@ -77,7 +77,7 @@ func main() {
 	flag.BoolVar(&isDry, "dry-run", false, "enable dry run mode")
 
 	flag.VisitAll(func(f *flag.Flag) {
-		n := "T2KMPG_" + strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))
+		n := "T2KMCG_" + strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))
 		if s := os.Getenv(n); s != "" {
 			f.Value.Set(s)
 		}
