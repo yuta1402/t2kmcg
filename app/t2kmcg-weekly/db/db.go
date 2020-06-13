@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/yuta1402/t2kmcg/app/t2kmcg-weekly/model"
 )
 
 var (
@@ -39,4 +40,5 @@ func Close() error {
 }
 
 func AutoMigrate() {
+	db.AutoMigrate(&model.Contest{})
 }

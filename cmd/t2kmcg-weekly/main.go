@@ -102,6 +102,8 @@ func main() {
 	}
 	defer db.Close()
 
+	db.AutoMigrate()
+
 	acpPage, err := webparse.NewAtCoderProblemsPage()
 	if err != nil {
 		elog.Fatal(err)
