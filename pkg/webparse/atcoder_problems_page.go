@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -153,8 +152,8 @@ func makeDateStr(t time.Time) string {
 
 func makeDateHourMinute(t time.Time) (string, string, string) {
 	d := makeDateStr(t)
-	h := strconv.Itoa(t.Hour())
-	m := strconv.Itoa(t.Minute())
+	h := fmt.Sprintf("%02d", t.Hour())
+	m := fmt.Sprintf("%02d", t.Minute())
 	return d, h, m
 }
 
@@ -169,12 +168,14 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 	startDate, startHour, startMinute := makeDateHourMinute(options.StartTime)
 	endDate, endHour, endMinute := makeDateHourMinute(options.EndTime)
 
+	p.Screenshot("test0.png")
+
 	{
 		elementValues := []ContestOptionElementValue{
-			{"#root > div > div.my-5.container > div:nth-child(2) > div > input", options.ContestTitle},
-			{"#root > div > div.my-5.container > div:nth-child(3) > div > input", options.Description},
-			{"#root > div > div.my-5.container > div:nth-child(5) > div > div > input", startDate},
-			{"#root > div > div.my-5.container > div:nth-child(6) > div > div > input", endDate},
+			{"#root > div > div.my-5.container > div:nth-child(3) > div > input", options.ContestTitle},
+			{"#root > div > div.my-5.container > div:nth-child(4) > div > textarea", options.Description},
+			{"#root > div > div.my-5.container > div:nth-child(7) > div > div > input", startDate},
+			{"#root > div > div.my-5.container > div:nth-child(8) > div > div > input", endDate},
 		}
 
 		for _, ev := range elementValues {
@@ -185,12 +186,16 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 		}
 	}
 
+	p.Screenshot("test1.png")
+
+	fmt.Println(startHour, startMinute)
+
 	{
 		elementValues := []ContestOptionElementValue{
-			{"#root > div > div.my-5.container > div:nth-child(5) > div > div > select:nth-child(2)", startHour},
-			{"#root > div > div.my-5.container > div:nth-child(5) > div > div > select:nth-child(3)", startMinute},
-			{"#root > div > div.my-5.container > div:nth-child(6) > div > div > select:nth-child(2)", endHour},
-			{"#root > div > div.my-5.container > div:nth-child(6) > div > div > select:nth-child(3)", endMinute},
+			{"#root > div > div.my-5.container > div:nth-child(7) > div > div > select:nth-child(2)", startHour},
+			{"#root > div > div.my-5.container > div:nth-child(7) > div > div > select:nth-child(3)", startMinute},
+			{"#root > div > div.my-5.container > div:nth-child(8) > div > div > select:nth-child(2)", endHour},
+			{"#root > div > div.my-5.container > div:nth-child(8) > div > div > select:nth-child(3)", endMinute},
 		}
 
 		for _, ev := range elementValues {
@@ -200,6 +205,8 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 			}
 		}
 	}
+
+	p.Screenshot("test2.png")
 
 	{
 		e := p.FindByButton("Add")
