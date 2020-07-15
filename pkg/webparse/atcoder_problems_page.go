@@ -168,8 +168,6 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 	startDate, startHour, startMinute := makeDateHourMinute(options.StartTime)
 	endDate, endHour, endMinute := makeDateHourMinute(options.EndTime)
 
-	p.Screenshot("test0.png")
-
 	{
 		elementValues := []ContestOptionElementValue{
 			{"#root > div > div.my-5.container > div:nth-child(3) > div > input", options.ContestTitle},
@@ -186,10 +184,6 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 		}
 	}
 
-	p.Screenshot("test1.png")
-
-	fmt.Println(startHour, startMinute)
-
 	{
 		elementValues := []ContestOptionElementValue{
 			{"#root > div > div.my-5.container > div:nth-child(7) > div > div > select:nth-child(2)", startHour},
@@ -205,8 +199,6 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 			}
 		}
 	}
-
-	p.Screenshot("test2.png")
 
 	{
 		e := p.FindByButton("Add")
