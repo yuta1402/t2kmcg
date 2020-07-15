@@ -25,6 +25,8 @@ RUN apk add --no-cache \
     chromium \
     chromium-chromedriver
 
+RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
+
 COPY --from=builder /go/src/github.com/yuta1402/t2kmcg/t2kmcg-weekly .
 
 CMD ["./t2kmcg-weekly"]

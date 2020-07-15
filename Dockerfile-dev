@@ -3,10 +3,13 @@ FROM golang:1.14-alpine
 ENV CGO_ENABLED 0
 
 RUN apk add --no-cache \
+    tzdata \
     udev \
     ttf-freefont \
     chromium \
     chromium-chromedriver
+
+RUN cp /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
 WORKDIR /go/src/github.com/yuta1402/t2kmcg
 
