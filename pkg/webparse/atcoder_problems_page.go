@@ -172,8 +172,8 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 		elementValues := []ContestOptionElementValue{
 			{"#root > div > div.my-5.container > div:nth-child(3) > div > input", options.ContestTitle},
 			{"#root > div > div.my-5.container > div:nth-child(4) > div > textarea", options.Description},
-			{"#root > div > div.my-5.container > div:nth-child(7) > div > div > input", startDate},
-			{"#root > div > div.my-5.container > div:nth-child(8) > div > div > input", endDate},
+			{"#root > div > div.my-5.container > div:nth-child(8) > div > div > input", startDate},
+			{"#root > div > div.my-5.container > div:nth-child(9) > div > div > input", endDate},
 		}
 
 		for _, ev := range elementValues {
@@ -186,10 +186,10 @@ func (acpPage *AtCoderProblemsPage) CreateContest(options ContestOptions) (*Crea
 
 	{
 		elementValues := []ContestOptionElementValue{
-			{"#root > div > div.my-5.container > div:nth-child(7) > div > div > select:nth-child(2)", startHour},
-			{"#root > div > div.my-5.container > div:nth-child(7) > div > div > select:nth-child(3)", startMinute},
-			{"#root > div > div.my-5.container > div:nth-child(8) > div > div > select:nth-child(2)", endHour},
-			{"#root > div > div.my-5.container > div:nth-child(8) > div > div > select:nth-child(3)", endMinute},
+			{"#root > div > div.my-5.container > div:nth-child(8) > div > div > select:nth-child(2)", startHour},
+			{"#root > div > div.my-5.container > div:nth-child(8) > div > div > select:nth-child(3)", startMinute},
+			{"#root > div > div.my-5.container > div:nth-child(9) > div > div > select:nth-child(2)", endHour},
+			{"#root > div > div.my-5.container > div:nth-child(9) > div > div > select:nth-child(3)", endMinute},
 		}
 
 		for _, ev := range elementValues {
